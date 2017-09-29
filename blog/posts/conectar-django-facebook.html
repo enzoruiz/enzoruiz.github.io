@@ -69,7 +69,7 @@
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="post-heading">
                         <h1>Social Auth con Facebook en Django</h1>
-                        <h2 class="subheading">Utilizaremos python-social-auth para integrar facilmente con Facebook</h2>
+                        <h2 class="subheading">Utilizaremos python-social-auth para integrar fácilmente con Facebook</h2>
                         <span class="meta">Post creado el Septiembre 27, 2017</span>
                     </div>
                 </div>
@@ -84,7 +84,7 @@
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <h2 class="section-heading">Introducción</h2>
                     <p>
-                        Comenzamos esta lista de posts, con un ejemplo sencillo y al mismo tiempo muy util para nuestros proyectos desarrollados en Django.
+                        Comenzamos esta lista de posts, con un ejemplo sencillo y al mismo tiempo muy útil para nuestros proyectos desarrollados en Django.
                     </p>
                     <p>
                         Utilizando 'python-social-auth', permitiremos a nuestros usuarios registrarse con su cuenta de Facebook en un solo click.
@@ -117,6 +117,32 @@
                                 <br>
                                 <p>
                                     Vamos a <a href="https://developers.facebook.com/" target="_blank">facebook developers</a> y creamos una aplicación.
+                                    <br><br>
+                                    <img src="../../img/posts/ejemplo1/img1.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                                    <br><br>
+                                    Asignamos un nombre y correo electrónico a nuestra aplicación.
+                                    <br><br>
+                                    <img src="../../img/posts/ejemplo1/img2.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                                    <br><br>
+                                    Luego buscamos la opción de 'Inicio de sesión con Facebook'
+                                    <br><br>
+                                    <img src="../../img/posts/ejemplo1/img3.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                                    <br><br>
+                                    A continuación seleccionamos la plataforma 'Web'
+                                    <br><br>
+                                    <img src="../../img/posts/ejemplo1/img4.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                                    <br><br>
+                                    Ahora tenemos que decirle a nuestra aplicación que <b>SOLO</b> acepte peticiones de algún lugar en específico.<br><br>
+                                    Este ejemplo se desarrolla en localhost usando el puerto 8000. Entonces colocaremos 'http://localhost:8000/'<br><br>
+                                    En el caso que tengamos nuestro proyecto en producción, tendríamos que colocar el nombre de nuestro dominio.<br><br>
+                                    No se olviden de guardar...
+                                    <br><br>
+                                    <img src="../../img/posts/ejemplo1/img5.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                                    <br><br>
+                                    Regresamos a nuestro Panel principal.<br><br>
+                                    Y ahora guarda bien tu 'Identificador de la aplicación' y 'Clave secreta de la aplicación', ya que las necesitaremos en nuestro proyecto.
+                                    <br><br>
+                                    <img src="../../img/posts/ejemplo1/img6.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
                                 </p>
                             </li>
                             <li>
@@ -125,7 +151,7 @@
                                 <p>
                                     <b>Archivo: settings.py</b>
                                     <p>
-                                        Agregar 'social_django' en INSTALLED_APPS
+                                        Agregar 'social_django' en INSTALLED_APPS<br>
                                         <br>
                                         <code>
                                             INSTALLED_APPS = [<br>
@@ -139,12 +165,125 @@
                                             ]
                                         </code>
                                     </p>
+                                    <p>
+                                        Agregar los backends de las redes sociales que utilizaremos en el proyecto.<br>
+                                        En nuestro caso solo de Facebook.<br>
+                                        <br>
+                                        <code>
+                                            AUTHENTICATION_BACKENDS = (<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.backends.facebook.FacebookOAuth2',<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'django.contrib.auth.backends.ModelBackend',<br>
+                                            )
+                                        </code>
+                                    </p>
+                                    <p>
+                                        Ahora agregamos la secuencia de 'pipelines' que ejecutara 'social-auth' cuando un usuario desea registrarse.
+                                        <br><br>
+                                        Podemos agregar nuestro propio 'pipeline' antes, en medio ó después de los pipeline que vienen por defecto, para modificar el comportamiento del registro.
+                                        <br><br>
+                                        A mas detalle la <a href="http://python-social-auth.readthedocs.io/en/latest/pipeline.html" target="_blank">documentación</a> ;).
+                                        <br><br>
+                                        <code>
+                                            SOCIAL_AUTH_PIPELINE = (<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.pipeline.social_auth.social_details',<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.pipeline.social_auth.social_uid',<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.pipeline.social_auth.social_user',<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.pipeline.user.get_username',<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.pipeline.user.create_user',<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.pipeline.social_auth.associate_user',<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.pipeline.social_auth.load_extra_data',<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.pipeline.user.user_details',<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'social_core.pipeline.social_auth.associate_by_email',<br>
+                                            )
+                                        </code>
+                                    </p>
+                                    <p>
+                                        Definimos también el alcance de los 'fields' que necesitamos de la cuenta de Facebook del futuro usuario.
+                                        <br><br>
+                                        Además podemos definir la 'url' luego que el usuario se logueo satisfactoriamente.
+                                        <br><br>
+                                        Esto es algo básico pero existe <a href="http://python-social-auth.readthedocs.io/en/latest/configuration/settings.html" target="_blank">mas configuración para 'social-auth'</a>.
+                                        <br><br>
+                                        <code>
+                                            SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/home'<br>
+                                            SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']<br>
+                                            SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;'fields': 'id, email, last_name, first_name',<br>
+                                            }
+                                        </code>
+                                    </p>
+                                    <p>
+                                        Y por último pero no menos importante.
+                                        <br><br>
+                                        Tenemos que colocar las llaves secretas que nos da la aplicación de Facebook Developers.
+                                        <br><br>
+                                        SOCIAL_AUTH_FACEBOOK_KEY => Identificador de la aplicación <br>
+                                        SOCIAL_AUTH_FACEBOOK_SECRET => Clave secreta de la aplicación <br>
+                                        <br>
+                                        <code>
+                                            SOCIAL_AUTH_FACEBOOK_KEY = '832834240218564'
+                                            SOCIAL_AUTH_FACEBOOK_SECRET = '8083396ebdd4f9f2051913960643f04a'
+                                        </code>
+                                    </p>
+                                </p>
+                            </li>
+                            <li>
+                                Paso 4 (Final): Definiendo la 'url' de 'social-auth' y llamándola desde un formulario
+                                <br>
+                                <p>
+                                    <b>Archivo urls.py</b>
+                                    <p>
+                                        Agregamos la 'url' necesaria para llamar 'social-auth' desde un botón de Login<br>
+                                        <br>
+                                        <code>
+                                            url('', include('social_django.urls', namespace='social')),
+                                        </code>
+                                    </p>
+                                </p>
+                                <p>
+                                    <b>Archivo login.html</b>
+                                    <p>
+                                        Creamos un pequeño formulario con un botón que llamará la 'url' que definimos anteriormente.
+                                        <br><br>
+                                        <img src="../../img/posts/ejemplo1/img7.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                                    </p>
                                 </p>
                             </li>
                         </ul>
                     </p>
+                    <h2 class="section-heading">Resultado</h2>
+                    <p>
+                        Ahora cuando ingresamos a nuestra vista de 'login' y hacemos click en el botón con la 'url' de 'social-auth'.
+                        <br><br>
+                        <img src="../../img/posts/ejemplo1/img8.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                        <br><br>
+                        Nos llevará a nuestra cuenta de Facebook pidiendo permiso para que pueda brindar la data pública a nuestro proyecto en Django.<br>
+                        <br><br>
+                        <img src="../../img/posts/ejemplo1/img9.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                        <br><br>
+                        Luego cuando aceptamos, nos rediccionará a la 'url' del 'social-auth', que definimos en el 'settings.py'.
+                        <br><br>
+                        <img src="../../img/posts/ejemplo1/img10.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                        <br><br>
+                    </p>
+                    <h2 class="section-heading">Resumen Final</h2>
+                    <p>
+                        Gracias a 'social-auth' no solo podemos usar Facebook como autenticador, sino también diferentes redes sociales como Twitter, Github, etc.
+                    </p>
+                    <p>
+                        Este fue un ejemplo muy práctico y sencillo para mostrar la forma de conectar Facebook como autenticador en nuestros proyectos desarrollados en Django.
+                    </p>
+                    <p>
+                        Recuerda que siempre hay que revisar la <a href="http://python-social-auth.readthedocs.io/en/latest/" target="_blank">documentación oficial</a> para extender el uso de esta librería en nuestros proyectos.
+                    </p>
+                    <p>
+                        Aca les dejo el <a href="https://github.com/enzoruiz/blog-ejemplos/tree/ejemplo1" target="_blank">código de este ejemplo</a>.
+                    </p>
+                    <p>
+                        Espero les haya servido, saludos :)!
+                    </p>
 
-                    <div id="disqus_thread"></div>
+                    <dilcev id="disqus_thread"></div>
 
                 </div>
             </div>
