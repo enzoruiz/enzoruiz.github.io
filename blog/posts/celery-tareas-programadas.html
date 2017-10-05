@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Blog - Enzo Ruiz Peláez</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Theme CSS -->
+    <link href="../../css/clean-blog.min.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">ENZO RUIZ PELÁEZ</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="../../index.html">Inicio</a>
+                    </li>
+                    <li>
+                        <a href="../index.html">Blog</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header class="intro-header" style="background-image: url('../../img/posts/ejemplo2/img6.jpg')">
+    <!-- <header class="intro-header" style="background-image: url('../../img/posts/post-bg.jpg')"> -->
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Tareas programadas con Celery en Django</h1>
+                        <h2 class="subheading">Mediante Celery ejecutaremos tareas en momentos determinados</h2>
+                        <span class="meta">Post creado el Octubre 05, 2017</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Post Content -->
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <h2 class="section-heading">Introducción</h2>
+                    <p>
+                        Celery es un manejador de colas de tareas, centrada en el procesamiento en tiempo real y que también admite la programación de tareas.
+                    </p>
+                    <p>
+                        Celery registra las tareas y se las envía al broker, luego el broker registra esas tareas en una o más colas, y entonces cada tarea es recibida por los workers de Celery.
+                        <br><br>
+                        La cantidad de workers puede ser modificada dependiendo de la cantidad de 'cpu' disponibles en la PC.
+                        <br><br>
+                        <img src="../../img/posts/ejemplo2/img5.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                    </p>
+                    <blockquote>
+                        Nota: Este ejemplo esta desarrollado con Django 1.11.5 y Python 3.5.2
+                    </blockquote>
+                    <h2 class="section-heading">Ingredientes</h2>
+                    <p>
+                        <ul>
+                            <li>celery</li>
+                            <li>broker (RabbitMQ, Redis, etc)</li>
+                        </ul>
+                    </p>
+                    <h2 class="section-heading">Preparación</h2>
+                    <p>
+                        <ul>
+                            <li>
+                                Paso 1: Instalación de Celery
+                                <p>
+                                    <code>
+                                        pip install celery
+                                    </code>
+                                    <br><br>
+                                    En este ejemplo usaremos como broker a RabbitMQ.
+                                    <br><br>
+                                    Se tienen 2 opciones para tener RabbitMQ a nuestra disposición:
+                                    <br>
+                                    <ul>
+                                        <li>Directamente instalado en nuestra PC</li>
+                                        <li>En un contenedor de Docker</li>
+                                    </ul>
+                                    <br>
+                                    En este ejemplo usaremos un contenedor de Docker con la imagen de RabbitMQ.
+                                    <br><br>
+                                    <blockquote>
+                                        Nota: Se asume que tienes Docker instalado. De lo contrario puedes instalar directamente RabbitMQ en tu PC para continuar con el ejemplo.
+                                    </blockquote>
+                                    <code>
+                                        docker run -p 5672:5672 --name broker_rabbit -d rabbitmq
+                                    </code>
+                                </p>
+                            </li>
+                            <li>
+                                Paso 2: Configuración de Celery en nuestro proyecto.
+                                <p>
+                                    <b>Creamos el archivo: ejemplo2/celery.py</b>
+                                    <p>
+                                        Dentro de 'celery.py' indicaremos donde se encuentra el archivo 'settings' del proyecto con el que celery trabajará.
+                                        <br><br>
+                                        Inicializaremos Celery y le diremos el arhivo 'settings' del proyecto que utilizará y la modalidad con la cual reconocerá las tareas.
+                                        <br><br>
+                                        No olviden cambiar 'ejemplo2' por el nombre de su proyecto...
+                                        <br><br>
+                                        <code>
+                                            from __future__ import absolute_import, unicode_literals <br>
+                                            import os <br>
+                                            from celery import Celery <br>
+                                            <br>
+                                            # set the default Django settings module for the 'celery' program. <br>
+                                            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ejemplo2.settings') <br>
+                                            <br>
+                                            app = Celery('ejemplo2') <br>
+                                            <br>
+                                            # Using a string here means the worker doesn't have to serialize <br>
+                                            # the configuration object to child processes. <br>
+                                            # - namespace='CELERY' means all celery-related configuration keys <br>
+                                            #   should have a `CELERY_` prefix. <br>
+                                            app.config_from_object('django.conf:settings', namespace='CELERY') <br>
+                                            <br>
+                                            # Load task modules from all registered Django app configs. <br>
+                                            app.autodiscover_tasks() <br>
+                                        </code>
+                                    </p>
+                                    <b>Archivo: ejemplo2/__init__.py</b>
+                                    <p>
+                                        <code>
+                                            from __future__ import absolute_import, unicode_literals <br>
+                                            <br>
+                                            # This will make sure the app is always imported when <br>
+                                            # Django starts so that shared_task will use this app. <br>
+                                            from .celery import app as celery_app <br>
+                                            <br>
+                                            __all__ = ['celery_app']
+                                        </code>
+                                    </p>
+                                    <b>Crear Archivo: inicio/tasks.py</b>
+                                    <p>
+                                        Creamos el archivo 'tasks.py' dentro de nuestra aplicación.
+                                        <br><br>
+                                        Y dentro del archivo nuestra tarea de prueba el cual solo imprimirá un mensaje.
+                                        <br><br>
+                                        Es importante saber que cuando queramos importar algo de 'celery', es necesario también importar el 'absolute_import' y 'unicode_literals' de '__future__'.
+                                        <br><br>
+                                        <code>
+                                            from __future__ import absolute_import, unicode_literals <br>
+                                            from celery import task <br>
+                                            <br>
+                                            @task(name='tarea_prueba') <br>
+                                            def tarea_prueba(): <br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;print('Tarea ejecutada correctamente en el minuto programado') <br>
+                                        </code>
+                                    </p>
+                                    <b>Archivo: settings.py</b>
+                                    <p>
+                                        Aca definiremos la url del broker que utilizará Celery, en nuestro caso es RabbitMQ con su respectivo usuario, password y puerto.
+                                        <br><br>
+                                        También le diremos a 'celery' que maneje todo en formato 'json'.
+                                        <br><br>
+                                        Es importante también definir el timezone, ya que de éste depende que se ejecuten las tareas en el momento necesitado.
+                                        <br><br>
+                                        Y por último pero no menos importante, el 'BEAT_SCHEDULE' que es la forma en como le decimos a 'celery' que ejecute una tarea determinada en un periodo de tiempo.
+                                        <br><br>
+                                        Para nuestro ejemplo debemos importar 'crontab' de 'celery' para indicar que queremos ejecutar 'tarea_prueba' en cada minuto 31.
+                                        <br><br>
+                                        Esto quiere decir que 'tarea_prueba' se ejecutará en cada minuto 31 de cada hora, mientras esté agregado en la configuración de 'BEAT_SCHEDULE'.
+                                        <br><br>
+                                        También se puede usar 'crontab' para ejecutar una tarea en determinado día, hora, segundo y por supuesto hacer uso de expresiones para casos un poco complejos.
+                                        <br><br>
+                                        Te recomiendo que vayas a la <a href="http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html#crontab-schedules" target="_blank">documentación</a> y veas TODO lo que podrias llegar a hacer con 'crontab' ;)
+                                        <br><br>
+                                        <code>
+                                            from __future__ import absolute_import, unicode_literals <br>
+                                            from celery.schedules import crontab <br>
+                                            <br>
+                                            CELERY_USER = 'guest' <br>
+                                            CELERY_PASSWORD = 'guest' <br>
+                                            <br>
+                                            CELERY_BROKER_URL = 'amqp://%s:%s@localhost:5672//' % (CELERY_USER, CELERY_PASSWORD) <br>
+                                            CELERY_ACCEPT_CONTENT = ['application/json'] <br>
+                                            CELERY_RESULT_SERIALIZER = 'json' <br>
+                                            CELERY_TASK_SERIALIZER = 'json' <br>
+                                            CELERY_TIMEZONE = 'America/Lima' <br>
+                                            CELERY_ENABLE_UTC = True <br>
+                                            CELERY_BEAT_SCHEDULE = { <br>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;'tarea-de-prueba': { <br>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'task': 'tarea_prueba', <br>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'schedule': crontab(minute=31) <br>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;}, <br>
+                                            }
+                                        </code>
+                                    </p>
+                                </p>
+                            </li>
+                            <li>
+                                <b>PASO OPCIONAL:</b> Gestionar la programación de tareas por medio del administrador de Django
+                                <p>
+                                    Primero, tenemos que instalar la librería 'django-celery-beat'
+                                    <br><br>
+                                    <code>
+                                        pip install django-celery-beat
+                                    </code>
+                                </p>
+                                <p>
+                                    Segundo, agregar 'django_celery_beat' a nuestras 'INSTALLED_APPS' en el settings.py
+                                    <br><br>
+                                    <code>
+                                        INSTALLED_APPS = ( <br>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;..., <br>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;'django_celery_beat', <br>
+                                        )
+                                    </code>
+                                </p>
+                                <p>
+                                    Tercero, hacer el 'migrate', ya que 'django-celery-beat' registra todo lo referente a las tareas programadas en sus respectivas tablas.
+                                    <br><br>
+                                    <code>
+                                        python manage.py migrate
+                                    </code>
+                                </p>
+                                <p>
+                                    Si deseas gestionar tus tareas de esta manera entonces tienes que inicializar Celery Beat especificando el 'scheduler' de 'django-celery-beat' para que Celery lo utilice.
+                                    <br><br>
+                                    <code>
+                                        celery -A ejemplo2 beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+                                    </code>
+                                </p>
+                                <p>
+                                    De esta manera ya no es necesario tener el 'CELERY_BEAT_SCHEDULE', ya que puedes programar las tareas desde el administrador de Django.
+                                </p>
+                                <blockquote>
+                                    Por defecto Celery utiliza su propio 'scheduler' y tendrías que inicializarlo como en el paso 3. Así que no hay ningún problema si no deseas utilizar 'django-celery-beat'.
+                                </blockquote>
+                            </li>
+                            <li>
+                                Paso 3: Inicializar celery worker y celery beat.
+                                <p>
+                                    <b>Celery worker</b>
+                                    <br><br>
+                                    <code>
+                                        celery -A ejemplo2 worker -l info
+                                    </code>
+                                    <br><br>
+                                    La terminal quedaría de esta manera.
+                                    <br><br>
+                                    <img src="../../img/posts/ejemplo2/img1.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                                </p>
+                                <p>
+                                    <b>Celery beat</b>
+                                    <br><br>
+                                    <code>
+                                        celery -A ejemplo2 beat -l info
+                                    </code>
+                                    <br><br>
+                                    La terminal quedaría de esta manera.
+                                    <br><br>
+                                    <img src="../../img/posts/ejemplo2/img2.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                                </p>
+                                </p>
+                            </li>
+                        </ul>
+                    </p>
+                    <h2 class="section-heading">Resultados</h2>
+                    <p>
+                        Cuando la hora del servidor pase por el minuto 31. La tarea se ejecutará y el resultado se observará en la pantalla del 'worker' y 'beat'.
+                        <br><br>
+                        <img src="../../img/posts/ejemplo2/img3.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                        <br><br>
+                        <img src="../../img/posts/ejemplo2/img4.png" alt="" class="img-fluid img-thumbnail" style="max-width: 100%;">
+                    </p>
+                    <h2 class="section-heading">Resumen Final</h2>
+                    <p>
+                        Como vimos en este simple ejemplo. Mediante Celery podemos no solo ejecutar tareas en segundo plano, sino también programarlas para que se ejecuten en periodos determinados o fechas exactas.
+                    </p>
+                    <p>
+                        Celery es de gran ayuda por ejemplo en casos de cambios de estado en sucesos específicos, envíos de email, realizar backups, etc.
+                    </p>
+                    <p>
+                        Con este sencillo ejemplo espero haber mostrado lo que podrías llegar a hacer en tus proyectos.
+                    </p>
+                    <p>
+                        Como siempre dejo el <a href="https://github.com/enzoruiz/blog-ejemplos/tree/ejemplo2" target="_blank">código</a> del ejemplo.
+                    </p>
+                    <p>
+                        Saludos!
+                    </p>
+
+                    <dilcev id="disqus_thread"></div>
+
+                </div>
+            </div>
+        </div>
+
+    </article>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://www.linkedin.com/in/enzo-ruiz-pelaez/" target="_blank">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/enzoruiz" target="_blank">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Enzo Ruiz Peláez 2017</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Contact Form JavaScript -->
+    <script src="../../js/jqBootstrapValidation.js"></script>
+    <script src="../../js/contact_me.js"></script>
+
+    <!-- Theme JavaScript -->
+    <script src="../../js/clean-blog.min.js"></script>
+
+    <!-- Disqus -->
+    <script>
+        /**
+        *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+        *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+        /*
+        var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        */
+        (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = 'https://enzoruiz.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+</body>
+
+</html>
